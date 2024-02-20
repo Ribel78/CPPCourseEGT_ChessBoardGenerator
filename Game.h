@@ -2,7 +2,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-
+#include <string>
 
 class Game {
 public:
@@ -22,6 +22,8 @@ public:
 	void initBoard();
 	void drawBoard();
 	void drawPieces();
+	void shufflePieces(bool, std::string&, std::string&);
+	
 private:
 
 	SDL_Window* window = NULL;
