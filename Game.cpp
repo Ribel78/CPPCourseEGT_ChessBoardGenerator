@@ -1,6 +1,11 @@
 //Game.cpp
 #include "Game.h"
 #include <iostream>
+#include <algorithm>
+#include <array>
+#include <random>
+#include <chrono>
+#include <cstring>
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, int flags) {
 
@@ -40,7 +45,9 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 //chess pieces in uinicode white to black in order King, Queen, Rook, Bishop, Knight, Pawn 
 //std::string cp_unicode[12] = {"\u2654", "\u2655", "\u2656", "\u2657", "\u2658", "\u2659", "\u265A", "\u265B", "\u265C", "\u265D", "\u265E", "\u265F"};
 //only black chess characters
-std::string cpb_unicode[12] = {"\u265A", "\u265B", "\u265C", "\u265D", "\u265E", "\u265F"};
+std::string cpb_unicode[6] = {"\u265A", "\u265B", "\u265C", "\u265D", "\u265E", "\u265F"};
+//chess pieces lookup reference according to FEN abbreviations
+std::string cp_lookupRef[12] = {"K","Q","R","B","N","P","k","q","r","b","n","p"};
 
 bool Game::ttf_init(){
 	if(TTF_Init() == -1){
@@ -222,7 +229,7 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-	SDL_Delay(50);
+	SDL_Delay(100);
 }
 
 void Game::clean() {
@@ -294,7 +301,12 @@ void Game::drawBoard(){
 }
 
 void Game::drawPieces(){
-	//SDL_RenderCopy(renderer, chessTexture, NULL, &dRectFont1);
+	std::string chessBoardShuffle;
+	std::string fenChessBoard;
+
+	shufflePieces(true, chessBoardShuffle, fenChessBoard);
+
+	std::cout << fenChessBoard << std::endl;
 
 	//white pawns
 	SDL_RenderCopy(renderer, chessPieces[5], NULL, chess_square[48]);
@@ -338,4 +350,69 @@ void Game::drawPieces(){
 
 	SDL_RenderPresent(renderer);
 
+}
+
+/*
+shuffle a char string of 64 chars formated to FEN chess board description
+and assigns raw and parsed char* to external variables
+_shuff - to shuffle (1) or keep ordered chess set
+_&custDescription - string reference to write the chess board description
+_&fenDescription - string reference to write the FEN the chess board description
+*/
+void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
+	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
+
+	//https://www.chess.com/terms/fen-chess
+	char tempFEN[71]; //string to hold the positions including separators '/' (64+7)
+	char FEN[71] = {'0',}; //string to hold the pieces including separators in FEN Format
+
+	if (shuff){
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine rand_en;
+		rand_en.seed(seed);
+		//random chess board all with all pieces
+		std::shuffle(chess_set, chess_set+64, rand_en); 
+
+		std::string temp(chess_set);
+		custDescription = temp;
+
+		int j = 0;
+		for (int i = 0; i < 64; i++){
+			tempFEN[j] = chess_set[i];
+			if( (i+1) % 8 == 0 && (( i+1 ) > 0 && ( i+1 ) < 64)){
+				j+=1;
+				tempFEN[j] = '/';
+			}
+			j+=1;
+		}
+
+		int empty_space = 0;
+		j=0;
+		int count = 0;
+		while(count < 71)
+		{
+			if (tempFEN[count] != '-' && empty_space==0){
+
+				FEN[j] = tempFEN[count];
+				count += 1;
+				j += 1;
+
+			} else if(tempFEN[count] == '-'){
+
+				empty_space += 1;
+				FEN[j] = ('0' + empty_space);
+				count += 1;
+
+			} else{
+				j += 1;
+				empty_space = 0;
+			}
+		}
+
+		temp = std::string(FEN);
+		fenDescription = temp;
+		} else{
+			custDescription = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
+			fenDescription = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+		}
 }
