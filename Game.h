@@ -10,7 +10,6 @@ public:
 	~Game();
 	bool init(const char* title, int xpos, int ypos, int width, int height, int flags);
 	bool ttf_init();
-	//bool chessBoardInit();
 	void render();
 	void update();
 	void handleEvents();
@@ -19,8 +18,10 @@ public:
 	bool isClickableTextureClicked(SDL_Texture* t, SDL_Rect* r,  int xDown, int yDown, int xUp, int yUp);
 
 	//Chess
+	void initBackground();
 	void initBoard();
 	void drawBoard();
+	void drawPieces();
 private:
 
 	SDL_Window* window = NULL;
@@ -29,7 +30,8 @@ private:
 	SDL_Texture	*textTextureFont1, 
 				*textTextureFont2, 
 				*textTextureFont1Wrapped, 
-				*textTextureFont2Wrapped;
+				*textTextureFont2Wrapped,
+				*chessTexture;
 	SDL_Rect dRectFont1, dRectFont2, dRectFont1Wrapped, dRectFont2Wrapped;
 	SDL_Texture* clickableTexture;
 	SDL_Rect clickableRect;
@@ -37,6 +39,7 @@ private:
 
 	//Chess
 	int chess_size;
-    SDL_Rect* square[64];
-    SDL_Color color[3];	
+    SDL_Rect* chess_square[64];
+    SDL_Color chess_color[3];	
+	SDL_Texture* chessPieces[12];
 };

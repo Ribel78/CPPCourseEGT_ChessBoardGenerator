@@ -10,19 +10,26 @@ const int WINDOW_HEIGHT = 720;
 int main(int argc, char* argv[]) {
 
 	game = new Game();
-	game->init("My new window",
+	game->init("Chess Board Generator",
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
 		WINDOW_WIDTH, WINDOW_HEIGHT,
 		SDL_WINDOW_RESIZABLE);
 	game->ttf_init();
-	game->initBoard();
-	
+
 	while (game->isRunning()) {
 		game->handleEvents();
 		game->update();
+		//Static Parts
+		game->initBackground();
+		game->initBoard();
+		game->drawBoard();	
+
+		//Dynamic parts
+		game->drawPieces();
+		
 		//game->render();
-		game->drawBoard();
+		
 	}
 	game->clean();
 	return 0;
