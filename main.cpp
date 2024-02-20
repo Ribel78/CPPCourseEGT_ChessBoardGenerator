@@ -1,5 +1,6 @@
 //main.cpp
 #include "Game.h"
+
 #include <iostream>
 
 Game* game = NULL;
@@ -15,10 +16,13 @@ int main(int argc, char* argv[]) {
 		WINDOW_WIDTH, WINDOW_HEIGHT,
 		SDL_WINDOW_RESIZABLE);
 	game->ttf_init();
+	game->initBoard();
+	
 	while (game->isRunning()) {
 		game->handleEvents();
 		game->update();
-		game->render();
+		//game->render();
+		game->drawBoard();
 	}
 	game->clean();
 	return 0;

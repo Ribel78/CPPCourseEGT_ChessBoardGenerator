@@ -15,7 +15,7 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 			if (renderer != 0) //renderer init success
 			{
 				std::cout << "renderer creation success\n";
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
 
 			}
 			else {
@@ -42,7 +42,7 @@ bool Game::ttf_init(){
 		return false;
 	}
 	// loading fonts into pointer variables
-	TTF_Font* font1 = TTF_OpenFont("fonts/Arcade.ttf", 48); 
+	TTF_Font* font1 = TTF_OpenFont("fonts/DejaVuSans.ttf", 48); 
 	TTF_Font* font2 = TTF_OpenFont("fonts/segoepr.ttf", 72);
 
 	if(font1 == NULL || font2 == NULL){
@@ -52,7 +52,7 @@ bool Game::ttf_init(){
 	SDL_Surface* tempSurfaceText = NULL;
 
 	//create temp surface from font with given text and transfer the pixels to a texture 
-	tempSurfaceText = TTF_RenderText_Blended(font1, "Hello world!", {0,0,255,255});
+	tempSurfaceText = TTF_RenderUTF8_Blended(font1, "White \u2654 \u2655 \u2656 \u2657 \u2658 \u2659 Black \u265A \u265B \u265C \u265D \u265E \u265F", {0,0,0,255});
 	textTextureFont1 = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
 
 	//use the same temp surface for the next iterrations
@@ -208,9 +208,50 @@ Game::Game() {
 	Game::window = NULL;
 	Game::renderer = NULL;
 	Game::running = true;
+
+	//Chess
+	chess_size = 640;
+    color[0] = {0,0,0, 255};
+    color[1] = {255,255,255,255};
+    color[2] = {100, 255, 255, 100};
+
+    for (int i = 0; i < 64; i++){
+        square[i] = new SDL_Rect{0, 0, 0, 0};
+    }
+
 }
 
 Game::~Game() {
-	delete window;
-	delete renderer;
+	// delete window;
+	// delete renderer;
+
+	//Chess
+    for (int i = 0; i < 64; i++){
+        delete square[i];
+    }	
+}
+
+//Chess
+
+void Game::initBoard(){
+    for (int i = 0; i < 64; i++){
+        square[i]->x = (i % 8)*(chess_size / 8);
+        square[i]->y = (i / 8)*(chess_size / 8);
+        square[i]->w = square[i]->h = chess_size / 8;
+
+    }	
+}
+
+void Game::drawBoard(){
+	for (int i = 0; i < 64; i++){
+		SDL_SetRenderDrawColor(
+			renderer,
+			color[(i + ( i / 8 ) % 2 ) %2 ].r,
+			color[(i + ( i / 8 ) % 2 ) %2].g,
+			color[(i + ( i / 8 ) % 2 ) %2].b,
+			color[(i + ( i / 8 ) % 2 ) %2].a
+		);
+		SDL_RenderFillRect(renderer,square[i]);
+	}
+	SDL_RenderPresent(renderer);
 }
