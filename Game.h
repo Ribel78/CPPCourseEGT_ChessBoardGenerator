@@ -21,6 +21,8 @@ public:
 	void initBackground();
 	void initBoard();
 	void drawBoard();
+	void drawStaticText();
+	void drawPossibleMovesOverlay();
 	void drawPieces();
 	void shufflePieces(bool, std::string&, std::string&);
 	

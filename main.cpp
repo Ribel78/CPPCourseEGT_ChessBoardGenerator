@@ -16,19 +16,21 @@ int main(int argc, char* argv[]) {
 		WINDOW_WIDTH, WINDOW_HEIGHT,
 		SDL_WINDOW_RESIZABLE);
 	game->ttf_init();
-
+	game->initBoard();
 	while (game->isRunning()) {
 		game->handleEvents();
-		game->update();
+		
 		//Static Parts
 		game->initBackground();
-		game->initBoard();
-		game->drawBoard();	
+		game->drawBoard();		
+		game->drawStaticText();
 
-		//Dynamic parts
+		//Dynamic parts	
 		game->drawPieces();
-		
-		//game->render();
+	
+		//Update Data	
+		game->update();
+		// game->render();	
 		
 	}
 	game->clean();
