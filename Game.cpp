@@ -39,6 +39,7 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 	}
 	std::cout << "init success\n";
 	running = true;
+	simulating = false;
 	return true;
 }
 
@@ -81,15 +82,20 @@ bool Game::ttf_init(){
 	int tw, th; //variables to store dimensions data
 	//use the same temp surface for the next iterrations
 	tempSurfaceText = TTF_RenderText_Blended(font2, "Chess Board Generator", {0,0,0,255});
-	textTextureFont2 = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
-	SDL_QueryTexture(textTextureFont2, 0, 0, &tw, &th);
-	dRectFont2 = {680, 20, 560, 64};	
-	
-	// //..this function allows multiline text
-	// tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "Hello world!\nThis wraps the text.", 
-	// 													{255,0,255,255}, 300);
-	// textTextureFont1Wrapped = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
-	// //..
+	textTitleTexture = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
+	//SDL_QueryTexture(textTextureFont2, 0, 0, &tw, &th);
+	textTitleRect = {680, 20, 560, 64};	
+
+	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "Start\n Simulation", {0,0,0,255}, 0);
+	buttonStartTex = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
+	buttonStartRect = {680, 560, 256, 64};
+
+	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "Stop\n Simulation", {0,0,0,255}, 0);
+	buttonStopTex = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
+	buttonStopRect = {980, 560, 256, 64};
+
+	//..this function allows multiline text
+	//..
 	// tempSurfaceText = TTF_RenderText_Blended_Wrapped(font2, "Hello world!\nThis wraps the text.", 
 	// 													{0,0,255,255}, 500);
 	// textTextureFont2Wrapped = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
@@ -104,24 +110,17 @@ bool Game::ttf_init(){
 	// dRectFont1 = {10, 10, tw, th};
 	
 
-	// //..
-	// SDL_QueryTexture(textTextureFont1Wrapped, 0, 0, &tw, &th);
-	// dRectFont1Wrapped = {650, 10, tw, th};	
-	// //..
-	// SDL_QueryTexture(textTextureFont2Wrapped, 0, 0, &tw, &th);
-	// dRectFont2Wrapped = {650, 320, tw, th};	
-
-	// // - get dimensions for the clickable texture
-	// SDL_QueryTexture(clickableTexture, 0, 0, &tw, &th);
-	// // get window dimensions
-	// int ww, wh;
-	// SDL_GetWindowSize(window, &ww, &wh);
-	// //SDL_Rect for the clickable text 
-	// clickableRect = {ww/2 - tw, wh/2 - th, tw, th};
-
 	SDL_FreeSurface(tempSurfaceText); // delete the temp surface
 	TTF_CloseFont(font1); //deleting font pointers
 	TTF_CloseFont(font2); //..
+
+	//dynamic text KJFKKF
+	infoFont = TTF_OpenFont("fonts/segoepr.ttf", 28); // try updating the text content
+	if(infoFont == NULL){
+		std::cout << "infoFont not loaded" << std::endl;
+	}	
+	
+	
 
 	return true;
 }
@@ -153,6 +152,21 @@ bool Game::isClickableTextureClicked(SDL_Texture* t, SDL_Rect* r,  int xDown, in
 	return false;
 }
 
+bool Game::buttonClicked(SDL_Rect* r,  int xDown, int yDown, int xUp, int yUp){
+	//int tw, th;
+	// get info about texture dimensions and assign it to variables
+	//SDL_QueryTexture(t, 0, 0, &tw, &th);
+
+	// checks positions of the mouse when down and up separately and compare against the SDL_Rect positions
+	if(((xDown > r->x) && (xDown < r->x +r->w)) && ((xUp > r->x) && (xUp < r->x +r->w))&&
+		((yDown > r->y) && (yDown < r->y +r->h)) && ((yUp > r->y) && (yUp < r->y +r->h))){
+			//click coordinates inside  SDL_Rect rectangle
+			return true;
+	}
+	//try logic directly with SDL_Rect instead of Texture width and height
+	return false;
+}
+
 void Game::handleEvents() {
 	SDL_Event event;
 	if (SDL_PollEvent(&event)) {
@@ -160,31 +174,35 @@ void Game::handleEvents() {
 		case SDL_QUIT: running = false; break;
 
 		case SDL_MOUSEBUTTONDOWN: {
-			//int msx, msy;
-			//std::cout << "mouse button down\n";
-			//if (event.button.button == SDL_BUTTON_LEFT) {
-			//	SDL_GetMouseState(&msx, &msy);
-			//	std::cout << msx << ":" << msy << "\n";
 			// int msx, msy;
+			// std::cout << "mouse button down\n";
 			// if (event.button.button == SDL_BUTTON_LEFT) {
 			// 	SDL_GetMouseState(&msx, &msy);
-			// 	mouseDownX = msx;
-			// 	mouseDownY = msy;
-			// }
+			// 	std::cout << msx << ":" << msy << "\n";
+			int msx, msy;
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				SDL_GetMouseState(&msx, &msy);
+				mouseDownX = msx;
+				mouseDownY = msy;
+			}
 		}; break;
 		case SDL_MOUSEBUTTONUP: {
+			int msx, msy;
+			std::cout << "mouse button up\n";
+			if (event.button.button == SDL_BUTTON_RIGHT) {
+				SDL_GetMouseState(&msx, &msy);
+				std::cout << msx << ":" << msy << "\n";
+			}
 			//int msx, msy;
-			//std::cout << "mouse button up\n";
-			//if (event.button.button == SDL_BUTTON_RIGHT) {
-			//	SDL_GetMouseState(&msx, &msy);
-			//	std::cout << msx << ":" << msy << "\n";
-			//}
-			// int msx, msy;
-			// if (event.button.button == SDL_BUTTON_LEFT) {
-			// 	SDL_GetMouseState(&msx, &msy);
-			// 	std::cout << (isClickableTextureClicked(clickableTexture, &clickableRect, mouseDownX, mouseDownY, msx, msy) ? "CLICKED" : "NOT CLICKED");
-				
-			// }
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				SDL_GetMouseState(&msx, &msy);
+				if(buttonClicked(&buttonStartRect,mouseDownX,mouseDownY, msx, msy)){
+					setSimulating(true);
+				}
+				if(buttonClicked(&buttonStopRect,mouseDownX,mouseDownY, msx, msy)){
+					setSimulating(false);
+				}
+			}
 		}; break;
 
 		case SDL_KEYDOWN:{
@@ -214,7 +232,8 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-	SDL_Delay(100);
+
+	SDL_Delay(250);
 }
 
 void Game::clean() {
@@ -228,31 +247,50 @@ bool Game::isRunning() {
 	return Game::running;
 }
 
+bool Game::isSimulating() {
+	return Game::simulating;
+}
+
+void Game::setSimulating(bool state){
+	Game::simulating = state;
+}
+
 Game::Game() {
 	Game::window = NULL;
 	Game::renderer = NULL;
 	Game::running = true;
+	Game::simulating = false; //simulate chessboard
 
 	//Chess Board Size and Color
 	chess_size = 640;
-    chess_color[0] = {214, 187, 141, 255}; //white square
-	chess_color[1] = {198, 130, 66, 255}; //black square
-    chess_color[2] = {100, 255, 255, 100}; // highlight color
+    chess_color[0] = {214, 187, 141, 255}; //"white" square
+	chess_color[1] = {198, 130, 66, 255}; //"black" square
+    chess_color[2] = {100, 255, 100, 50}; // highlight color
+
+	//simulation time variables
+	numberOfSimulations = 0;
+	totalSimulationTime = 0;
+	averageSimulationTime = 0;
+	simulationTime = 0;
 
     for (int i = 0; i < 64; i++){
         chess_square[i] = new SDL_Rect{0, 0, 0, 0};
     }
-
+	queueCustomSetDescription.push("rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR");
+	queueFENSetDescription.push("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
 
 Game::~Game() {
 	// delete window;
 	// delete renderer;
-
 	//Chess
     for (int i = 0; i < 64; i++){
         delete chess_square[i];
     }	
+
+	//dynamic text KJFKKF
+	SDL_FreeSurface(tempSurfaceDynamicText); //closing surface for dynamic text
+	TTF_CloseFont(infoFont); // closing font for dynamic text
 }
 
 //Chess
@@ -285,9 +323,46 @@ void Game::drawBoard(){
 	//SDL_RenderPresent(renderer);
 }
 
-void Game::drawStaticText(){
+void Game::drawBoardOverlay(){
+	bool showOvrlay = false;
+	if (showOvrlay){
+		for (int i = 0; i < 64; i++){
+			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+			SDL_SetRenderDrawColor(renderer, 
+				chess_color[2].r, chess_color[2].g, 
+				chess_color[2].b, chess_color[2].a);
+			SDL_RenderFillRect(renderer,chess_square[i]);
+		}
+	}
+	//SDL_RenderPresent(renderer);	
+}
 
-	SDL_RenderCopy(renderer, textTextureFont2, NULL, &dRectFont2);
+void Game::drawStaticText(){
+	// Title
+	SDL_RenderCopy(renderer, textTitleTexture, NULL, &textTitleRect);
+	SDL_SetRenderDrawColor(renderer, 234,123,53,255);
+
+	// Info - Glitchy - 	//dynamic text KJFKKF
+	tempSurfaceDynamicText = TTF_RenderText_Blended(infoFont, 
+	queueFENSetDescription.back().c_str(), {0,0,0,255});
+	if(tempSurfaceDynamicText == NULL){
+		std::cout << "Surface, not created" << std::endl;
+	}
+	textInfoTexture = SDL_CreateTextureFromSurface(renderer, tempSurfaceDynamicText);
+	//query info from a texture and write to variables 
+	int tw, th;
+	SDL_QueryTexture(textInfoTexture, 0, 0, &tw, &th);
+	int ww, wh;
+	SDL_GetWindowSize(window, &ww, &wh);
+	// Game object SDL_Rect - gets the dimensions from the texture for filling later
+	infoTextRect = {(ww-tw)/2, 650, tw, th}; // for the textInfoTexture
+	SDL_RenderCopy(renderer, textInfoTexture, NULL, &infoTextRect);
+
+	// Buttons
+	SDL_RenderFillRect(renderer,&buttonStartRect);
+	SDL_RenderCopy(renderer, buttonStartTex, NULL, &buttonStartRect);
+	SDL_RenderFillRect(renderer,&buttonStopRect);
+	SDL_RenderCopy(renderer, buttonStopTex, NULL, &buttonStopRect);
 	//SDL_RenderPresent(renderer);
 
 }
@@ -303,8 +378,8 @@ void Game::drawPieces(){
 	std::string chessBoardShuffle;
 	std::string fenChessBoard;
 
-	shufflePieces(true, chessBoardShuffle, fenChessBoard);
-	std::cout << fenChessBoard << std::endl;
+	shufflePieces(isSimulating(), chessBoardShuffle, fenChessBoard);
+	//std::cout << fenChessBoard << std::endl;
 
 	for (int i = 0; i < 64; i++){
 		if (chessBoardShuffle[i] == '-'){
@@ -328,6 +403,9 @@ _&custDescription - string reference to write the chess board description
 _&fenDescription - string reference to write the FEN the chess board description
 */
 void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
+	//mark single simulation
+	int startTime = SDL_GetTicks();
+
 	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
 
 	//https://www.chess.com/terms/fen-chess
@@ -335,14 +413,26 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 	char FEN[71] = {'0',}; //string to hold the pieces including separators in FEN Format
 
 	if (shuff){
+		
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine rand_en;
 		rand_en.seed(seed);
 		//random chess board all with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
 
+		//simulation ends here
+		
+		simulationTime = SDL_GetTicks() - startTime; // gives zero
+		std::cout << startTime << "-" << simulationTime << std::endl;
+
+		// Reenable once simulation time is fixed 
+		// numberOfSimulations += 1;
+		// totalSimulationTime += simulationTime;
+		// averageSimulationTime = totalSimulationTime / numberOfSimulations;
+
 		std::string temp(chess_set);
 		custDescription = temp;
+		queueCustomSetDescription.push(custDescription);
 
 		int j = 0;
 		for (int i = 0; i < 64; i++){
@@ -379,8 +469,17 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 
 		temp = std::string(FEN);
 		fenDescription = temp;
+		queueFENSetDescription.push(fenDescription);
+
+		if(queueCustomSetDescription.size()==21){
+			queueCustomSetDescription.pop();
+			queueFENSetDescription.pop();
+		}
+
 		} else{
-			custDescription = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
-			fenDescription = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+			// custDescription = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
+			// fenDescription = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+			custDescription = queueCustomSetDescription.back();
+			fenDescription = queueFENSetDescription.back();
 		}
 }
