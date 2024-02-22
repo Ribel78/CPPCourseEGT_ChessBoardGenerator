@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 		game->drawBoard();	
 		game->drawBoardOverlay();	
 		game->drawStaticText();
-
+		
 		//Dynamic parts	
 		game->drawPieces();
 	

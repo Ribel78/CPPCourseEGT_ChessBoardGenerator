@@ -196,12 +196,16 @@ void Game::handleEvents() {
 			//int msx, msy;
 			if (event.button.button == SDL_BUTTON_LEFT) {
 				SDL_GetMouseState(&msx, &msy);
+				//std::cout << infoTextRect.x << ":" <<infoTextRect.y<<":"<<infoTextRect.w<<":"<<infoTextRect.h<<std::endl;
 				if(buttonClicked(&buttonStartRect,mouseDownX,mouseDownY, msx, msy)){
 					setSimulating(true);
 				}
 				if(buttonClicked(&buttonStopRect,mouseDownX,mouseDownY, msx, msy)){
 					setSimulating(false);
 				}
+				if(buttonClicked(&infoTextRect,mouseDownX,mouseDownY, msx, msy) && !isSimulating()){ // Copy FEN code to clipboard
+					SDL_SetClipboardText(queueFENSetDescription.back().c_str());
+				}				
 			}
 		}; break;
 
@@ -233,7 +237,7 @@ void Game::handleEvents() {
 
 void Game::update() {
 
-	SDL_Delay(250);
+	SDL_Delay(100);
 }
 
 void Game::clean() {
@@ -245,14 +249,6 @@ void Game::clean() {
 
 bool Game::isRunning() {
 	return Game::running;
-}
-
-bool Game::isSimulating() {
-	return Game::simulating;
-}
-
-void Game::setSimulating(bool state){
-	Game::simulating = state;
 }
 
 Game::Game() {
@@ -295,10 +291,18 @@ Game::~Game() {
 
 //Chess
 
+bool Game::isSimulating() {
+	return Game::simulating;
+}
+
+void Game::setSimulating(bool state){
+	Game::simulating = state;
+}
+
 void Game::initBackground(){
 	SDL_SetRenderDrawColor(renderer, 23,138,207, 255);
 	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
+	//SDL_RenderPresent(renderer);
 }
 
 void Game::initBoard(){
@@ -345,6 +349,7 @@ void Game::drawStaticText(){
 	// Info - Glitchy - 	//dynamic text KJFKKF
 	tempSurfaceDynamicText = TTF_RenderText_Blended(infoFont, 
 	queueFENSetDescription.back().c_str(), {0,0,0,255});
+	
 	if(tempSurfaceDynamicText == NULL){
 		std::cout << "Surface, not created" << std::endl;
 	}
@@ -357,6 +362,7 @@ void Game::drawStaticText(){
 	// Game object SDL_Rect - gets the dimensions from the texture for filling later
 	infoTextRect = {(ww-tw)/2, 650, tw, th}; // for the textInfoTexture
 	SDL_RenderCopy(renderer, textInfoTexture, NULL, &infoTextRect);
+
 
 	// Buttons
 	SDL_RenderFillRect(renderer,&buttonStartRect);
@@ -404,7 +410,7 @@ _&fenDescription - string reference to write the FEN the chess board description
 */
 void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
 	//mark single simulation
-	int startTime = SDL_GetTicks();
+	Uint32 startTime = SDL_GetTicks()+1;
 
 	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
 
@@ -419,16 +425,15 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		rand_en.seed(seed);
 		//random chess board all with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
-
-		//simulation ends here
 		
-		simulationTime = SDL_GetTicks() - startTime; // gives zero
-		std::cout << startTime << "-" << simulationTime << std::endl;
+		//simulation ends here
+		simulationTime = (SDL_GetTicks() - startTime); // gives zero
 
-		// Reenable once simulation time is fixed 
-		// numberOfSimulations += 1;
-		// totalSimulationTime += simulationTime;
-		// averageSimulationTime = totalSimulationTime / numberOfSimulations;
+		numberOfSimulations += 1;
+		totalSimulationTime += simulationTime;
+		averageSimulationTime = totalSimulationTime / numberOfSimulations;
+
+		std::cout << "nSim - " << numberOfSimulations << "; Ts - "<< simulationTime <<"; Tavg" << averageSimulationTime << "; T - "<< totalSimulationTime  << std::endl;
 
 		std::string temp(chess_set);
 		custDescription = temp;

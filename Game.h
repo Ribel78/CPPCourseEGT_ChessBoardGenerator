@@ -42,7 +42,6 @@ private:
 				*chessTexture;
 	SDL_Rect 	dRectFont1, 
 				textTitleRect, 
-				textInfoRect, 
 				dRectFont2Wrapped;
 	SDL_Texture* clickableTexture;
 	SDL_Rect clickableRect;
@@ -68,8 +67,8 @@ private:
 	SDL_Rect infoTextRect;
 
 	int numberOfSimulations;
-	int totalSimulationTime;
-	int averageSimulationTime;
-	int simulationTime;
+	double totalSimulationTime;
+	double averageSimulationTime;
+	double simulationTime;
 
 };
