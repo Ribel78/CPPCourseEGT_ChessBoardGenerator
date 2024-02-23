@@ -86,11 +86,11 @@ bool Game::ttf_init(){
 	//SDL_QueryTexture(textTextureFont2, 0, 0, &tw, &th);
 	textTitleRect = {680, 20, 560, 64};	
 
-	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "Start\n Simulation", {0,0,0,255}, 0);
+	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "     Start\n Simulation", {235,235,255,255}, 0);
 	buttonStartTex = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
 	buttonStartRect = {680, 560, 256, 64};
 
-	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "Stop\n Simulation", {0,0,0,255}, 0);
+	tempSurfaceText = TTF_RenderText_Blended_Wrapped(font1, "     Stop\n Simulation", {235,235,255,255}, 0);
 	buttonStopTex = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
 	buttonStopRect = {980, 560, 256, 64};
 
@@ -344,9 +344,9 @@ void Game::drawBoardOverlay(){
 void Game::drawStaticText(){
 	// Title
 	SDL_RenderCopy(renderer, textTitleTexture, NULL, &textTitleRect);
-	SDL_SetRenderDrawColor(renderer, 234,123,53,255);
+	
 
-	// Info - Glitchy - 	//dynamic text KJFKKF
+	// Info - //dynamic text KJFKKF
 	tempSurfaceDynamicText = TTF_RenderText_Blended(infoFont, 
 	queueFENSetDescription.back().c_str(), {0,0,0,255});
 	
@@ -363,8 +363,9 @@ void Game::drawStaticText(){
 	infoTextRect = {(ww-tw)/2, 650, tw, th}; // for the textInfoTexture
 	SDL_RenderCopy(renderer, textInfoTexture, NULL, &infoTextRect);
 
-
+	
 	// Buttons
+	SDL_SetRenderDrawColor(renderer, 50,50,110,255);
 	SDL_RenderFillRect(renderer,&buttonStartRect);
 	SDL_RenderCopy(renderer, buttonStartTex, NULL, &buttonStartRect);
 	SDL_RenderFillRect(renderer,&buttonStopRect);
@@ -409,7 +410,8 @@ _&custDescription - string reference to write the chess board description
 _&fenDescription - string reference to write the FEN the chess board description
 */
 void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
-	//mark single simulation
+	//Start simulation
+
 	Uint32 startTime = SDL_GetTicks()+1;
 
 	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
@@ -419,22 +421,106 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 	char FEN[71] = {'0',}; //string to hold the pieces including separators in FEN Format
 
 	if (shuff){
-		
+		//Step 1 - shuffle all 32 pieces
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine rand_en;
 		rand_en.seed(seed);
-		//random chess board all with all pieces
+		//random chess board with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
-		
-		//simulation ends here
-		simulationTime = (SDL_GetTicks() - startTime); // gives zero
+
+		//Step 2 - remove all pawns if foud on end rows - keep count of removed pieces
+		int pieces_to_remove = 8;
+		while(pieces_to_remove != 0){
+			for(int i = 0; i < 64; i++){
+				if(i < 8 || i > (64 - 9)){
+					if(chess_set[i] == 'p' || chess_set[i] == 'P'){
+						chess_set[i] = '-';
+						pieces_to_remove -= 1;
+					}
+				}
+				//Step 3 - in addition remove both Kings to reintroduce back when board is processed
+				if((chess_set[i] == 'k' || chess_set[i] == 'K')){
+						chess_set[i] = '-';
+				}
+			}
+			/*remove randomly selected pieces until 8 pieces in total are removed 
+			//not conting the the removed kings*/
+			if(pieces_to_remove != 0){
+				int rand_index = rand()%64;
+				if(chess_set[rand_index]!= '-'){
+					chess_set[rand_index] = '-';
+					pieces_to_remove -= 1;
+				} 
+			}
+		}
+		/*
+		// Step 4 - check if bishops are on different colors //some serious bishop logic
+		int square_color = -1;
+		bool first_bishop_found = false;
+		bool second_bishop_moved = false;
+
+		for (int i = 0; i < 64; i++){
+			if(chess_set[i]='b'){ // black bishop found
+				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 0) ||
+					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
+					if (!first_bishop_found){
+						square_color = 0;
+						first_bishop_found = true;
+						second_bishop_moved = false;
+						continue;
+					} else {
+						//move second bishop to white  color
+						while(!second_bishop_moved && square_color == 0){
+							int rand_index = rand()%64;
+							if( (( rand_index / 8 ) % 2 == 0 && ( rand_index % 8 ) % 2 == 1) ||
+								(( rand_index / 8 ) % 2 == 1 && ( rand_index % 8 ) % 2 == 1) ){
+								if(chess_set[rand_index] == '-'){
+									chess_set[i] = '-';
+									chess_set[rand_index] = 'b';
+									second_bishop_moved = true;
+									
+								}
+							}
+						} 
+					} 
+				} break;
+				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
+					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 1) ){ // check if color of square is white
+					if (!first_bishop_found){
+						square_color = 1;
+						first_bishop_found = true;
+						second_bishop_moved = false;
+						continue;
+					} else {
+						//move bishop to black color
+						while(!second_bishop_moved && square_color == 1){
+							int rand_index = rand()%64;
+							if( (( rand_index / 8 ) % 2 == 0 && ( rand_index % 8 ) % 2 == 0) ||
+								(( rand_index / 8 ) % 2 == 1 && ( rand_index % 8 ) % 2 == 0) ){
+								if(chess_set[rand_index] == '-'){
+									chess_set[i] = '-';
+									chess_set[rand_index] = 'b';
+									second_bishop_moved = true;
+									
+								}
+							}
+						} 
+					}
+				} break;
+			}			
+		}
+		*/
+
+		//End simulation
+
+		simulationTime = (SDL_GetTicks() - startTime); // find time for the above simulation/generation
 
 		numberOfSimulations += 1;
 		totalSimulationTime += simulationTime;
 		averageSimulationTime = totalSimulationTime / numberOfSimulations;
 
-		std::cout << "nSim - " << numberOfSimulations << "; Ts - "<< simulationTime <<"; Tavg" << averageSimulationTime << "; T - "<< totalSimulationTime  << std::endl;
-
+		std::cout << "nSim - " << numberOfSimulations << "; Ts - "<< simulationTime <<"; Ta - " << averageSimulationTime << "; Tt - "<< totalSimulationTime  << std::endl;
+		std::cout << (rand())%64 << std::endl;
 		std::string temp(chess_set);
 		custDescription = temp;
 		queueCustomSetDescription.push(custDescription);
@@ -480,8 +566,8 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 			queueCustomSetDescription.pop();
 			queueFENSetDescription.pop();
 		}
-
-		} else{
+	}
+		 else{
 			// custDescription = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
 			// fenDescription = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 			custDescription = queueCustomSetDescription.back();
