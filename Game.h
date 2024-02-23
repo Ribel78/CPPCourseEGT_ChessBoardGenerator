@@ -4,6 +4,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <string>
 #include <queue>
+#include <iostream>
+#include <algorithm>
+#include <array>
+#include <random>
+#include <chrono>
+#include <cstring>
 
 class Game {
 public:

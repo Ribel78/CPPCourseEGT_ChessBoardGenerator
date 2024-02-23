@@ -1,11 +1,6 @@
 //Game.cpp
 #include "Game.h"
-#include <iostream>
-#include <algorithm>
-#include <array>
-#include <random>
-#include <chrono>
-#include <cstring>
+
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, int flags) {
 
@@ -410,10 +405,13 @@ _&custDescription - string reference to write the chess board description
 _&fenDescription - string reference to write the FEN the chess board description
 */
 void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
-	//Start simulation
 
-	Uint32 startTime = SDL_GetTicks()+1;
+	//Start simulation set startTime
+    const std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 
+	//goto label bishops are not on different colored square - try new shuffle
+	
+		
 	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
 
 	//https://www.chess.com/terms/fen-chess
@@ -421,6 +419,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 	char FEN[71] = {'0',}; //string to hold the pieces including separators in FEN Format
 
 	if (shuff){
+		bishopAnomaly:
 		//Step 1 - shuffle all 32 pieces
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine rand_en;
@@ -428,8 +427,51 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		//random chess board with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
 
+		std::cout << "SHUFFLING" << std::endl;
+
+		// Step 4 - check if bishops are on different colors if not re-shuffle
+		int blackBishopOnBlack = 0;
+		int blackBishopOnWhite = 0;
+		int whiteBishopOnBlack = 0;
+		int whiteBishopOnWhite = 0;
+		for (int i = 0; i < 64; i++){
+			if(chess_set[i]=='b'){ // black bishop found
+				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
+					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
+					blackBishopOnBlack += 1;
+					// if ( blackBishopOnBlack > 1 ){
+					// 	chess_set[i]=='-';
+					// }
+				} else {
+					blackBishopOnWhite += 1;
+					// if ( blackBishopOnWhite > 1 ){
+					// 	chess_set[i]='-';
+					// }
+				}
+			}
+			if(chess_set[i]=='B'){ // white bishop found
+				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
+					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
+					whiteBishopOnBlack += 1;
+					// if ( whiteBishopOnBlack > 1 ){
+					// 	chess_set[i]='-';
+					// }
+				} else {
+					whiteBishopOnWhite += 1;
+					// if ( whiteBishopOnWhite > 1 ){
+					// 	chess_set[i]='-';
+					// }
+				}
+			}
+		}
+		if (blackBishopOnBlack > 1 || blackBishopOnWhite > 1 || whiteBishopOnBlack > 1 || whiteBishopOnWhite > 1 ) {
+			//Bishops of a kind on same color square - easy way to fix it is to reshuffle
+			//strcpy(chess_set, "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR");
+			goto bishopAnomaly;
+		}
+
 		//Step 2 - remove all pawns if foud on end rows - keep count of removed pieces
-		int pieces_to_remove = 8;
+		int pieces_to_remove = 8;	
 		while(pieces_to_remove != 0){
 			for(int i = 0; i < 64; i++){
 				if(i < 8 || i > (64 - 9)){
@@ -444,7 +486,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 				}
 			}
 			/*remove randomly selected pieces until 8 pieces in total are removed 
-			//not conting the the removed kings*/
+			not counting the the removed kings*/
 			if(pieces_to_remove != 0){
 				int rand_index = rand()%64;
 				if(chess_set[rand_index]!= '-'){
@@ -453,78 +495,33 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 				} 
 			}
 		}
-		/*
-		// Step 4 - check if bishops are on different colors //some serious bishop logic
-		int square_color = -1;
-		bool first_bishop_found = false;
-		bool second_bishop_moved = false;
+		//std::cout << "rand()%64: " << rand()%64 << std::endl;
+		
+		
 
-		for (int i = 0; i < 64; i++){
-			if(chess_set[i]='b'){ // black bishop found
-				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 0) ||
-					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
-					if (!first_bishop_found){
-						square_color = 0;
-						first_bishop_found = true;
-						second_bishop_moved = false;
-						continue;
-					} else {
-						//move second bishop to white  color
-						while(!second_bishop_moved && square_color == 0){
-							int rand_index = rand()%64;
-							if( (( rand_index / 8 ) % 2 == 0 && ( rand_index % 8 ) % 2 == 1) ||
-								(( rand_index / 8 ) % 2 == 1 && ( rand_index % 8 ) % 2 == 1) ){
-								if(chess_set[rand_index] == '-'){
-									chess_set[i] = '-';
-									chess_set[rand_index] = 'b';
-									second_bishop_moved = true;
-									
-								}
-							}
-						} 
-					} 
-				} break;
-				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
-					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 1) ){ // check if color of square is white
-					if (!first_bishop_found){
-						square_color = 1;
-						first_bishop_found = true;
-						second_bishop_moved = false;
-						continue;
-					} else {
-						//move bishop to black color
-						while(!second_bishop_moved && square_color == 1){
-							int rand_index = rand()%64;
-							if( (( rand_index / 8 ) % 2 == 0 && ( rand_index % 8 ) % 2 == 0) ||
-								(( rand_index / 8 ) % 2 == 1 && ( rand_index % 8 ) % 2 == 0) ){
-								if(chess_set[rand_index] == '-'){
-									chess_set[i] = '-';
-									chess_set[rand_index] = 'b';
-									second_bishop_moved = true;
-									
-								}
-							}
-						} 
-					}
-				} break;
-			}			
-		}
-		*/
+		// Step 5 Reintroduce Kings - TO DO
 
-		//End simulation
+		//End simulation - caclulate simulation duration in ns
+		const auto endTime = std::chrono::steady_clock::now();
+		const std::chrono::duration<double> simTime = std::chrono::duration_cast<std::chrono::nanoseconds> (endTime - startTime);
 
-		simulationTime = (SDL_GetTicks() - startTime); // find time for the above simulation/generation
-
+		simulationTime = simTime.count();
 		numberOfSimulations += 1;
 		totalSimulationTime += simulationTime;
 		averageSimulationTime = totalSimulationTime / numberOfSimulations;
 
-		std::cout << "nSim - " << numberOfSimulations << "; Ts - "<< simulationTime <<"; Ta - " << averageSimulationTime << "; Tt - "<< totalSimulationTime  << std::endl;
-		std::cout << (rand())%64 << std::endl;
+		std::cout 	<< "nSim - " << std::to_string(numberOfSimulations) << " ns"
+					<< "; Ts - "<< std::to_string(simulationTime) << " ns"
+					<<"; Ta - " << std::to_string(averageSimulationTime) << " ns"
+					<< "; Tt - "<< std::to_string(totalSimulationTime) << " ns"
+					<< std::endl;
+
+		//Set text for description of the chess board
 		std::string temp(chess_set);
 		custDescription = temp;
 		queueCustomSetDescription.push(custDescription);
 
+		//parse custom description to FEN description
 		int j = 0;
 		for (int i = 0; i < 64; i++){
 			tempFEN[j] = chess_set[i];
@@ -562,6 +559,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		fenDescription = temp;
 		queueFENSetDescription.push(fenDescription);
 
+		//if queue exceeds 20 pop one out
 		if(queueCustomSetDescription.size()==21){
 			queueCustomSetDescription.pop();
 			queueFENSetDescription.pop();
