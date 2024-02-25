@@ -347,6 +347,8 @@ void Game::drawBoardOverlay(){
 				chess_color[2].b, ((overlay[i]!='-') ? 100 : 0));
 			SDL_RenderFillRect(renderer,chess_square[i]);
 		}
+	} else {
+		boardDescription = "----------------------------------------------------------------";
 	}
 	//SDL_RenderPresent(renderer);	
 }
