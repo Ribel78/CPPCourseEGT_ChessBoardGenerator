@@ -3,8 +3,10 @@
 /*
 _boardDescription - chess board description in custom format 
 _boardOverlay - chess board description to update attack positions of the rook piece
-_x, _y - attacking piece positions
 _piece - the attacking rook ('r' or 'R')
+_x, _y - attacking piece positions
+_References to piece descriptions
+_is the same piece of opposite color attacked
 returns board with allowed positions ['X'] and attacked pieces of opposite color
 if default piece then it takes the rook (make sure it is either 'r' or 'R') from the _boardDescription at position x,y as attacking piece
 else puts the desired color rook at position x, y 
@@ -33,7 +35,7 @@ void rookAttack (   std::string &boardDescription,
                 if ( boardDescription[ (pos_y * 8) + pos_x ] == w_piece){
                         if(attackingPiece == 'r'){ //store the attacked white piece and end while
                             boardOverlay[ (pos_y * 8) + pos_x ] = w_piece;
-                        }
+                        }                       
                         isHit = true;
                         break;
                 }                
@@ -42,7 +44,7 @@ void rookAttack (   std::string &boardDescription,
                 if ( boardDescription[ (pos_y * 8) + pos_x ] == b_piece){
                         if(attackingPiece == 'R'){ //store the attacked black piece and end while
                             boardOverlay[ (pos_y * 8) + pos_x ] = b_piece;
-                        }                
+                        }               
                         isHit = true;
                         break;
                 }                
@@ -180,7 +182,7 @@ void bishopAttack (   std::string &boardDescription,
                 if ( boardDescription[ (pos_y * 8) + pos_x ] == b_piece){
                         if(attackingPiece == 'B'){ //store the attacked black piece and end while
                             boardOverlay[ (pos_y * 8) + pos_x ] = b_piece;
-                        }                
+                        }               
                         isHit = true;
                         break;
                 }                
@@ -283,6 +285,7 @@ _boardDescription - chess board description in custom format
 _boardOverlay - chess board description to update attack positions of the queen piece
 _x, _y - attacking piece positions
 _piece - the attacking queen ('q' or 'Q')
+_&isOpposite - returns true if opposite of same kind is attacked
 returns board with allowed positions ['X'] and attacked pieces of opposite color
 if default piece then it takes the queen (make sure it is either 'q' or 'Q') from the _boardDescription at position x,y as attacking piece
 else puts the desired color queen at position x, y 
@@ -299,12 +302,9 @@ void queenAttack (   std::string &boardDescription,
 
             //call rookAttack
             rookAttack ( boardDescription, boardOverlay, 'r', x, y, blackPieces, whitePieces );
-            std::cout << "rookAttack: " << boardOverlay << std::endl;
 
             //call bishopAttack
             bishopAttack ( boardDescription, boardOverlay, 'b', x, y, blackPieces, whitePieces );
-            std::cout << "bishopAttack: " << boardOverlay << std::endl;
-
         }
 
         if(attackingPiece == 'Q'){
@@ -354,8 +354,6 @@ void knightAttack (   std::string &boardDescription,
                             if(attackingPiece == 'n'){ //store the attacked white piece and end while
                                 boardOverlay[ (pos_y * 8) + pos_x ] = w_piece;
                             }
-                            // isHit = true;
-                            // break;
                     }                
                 }
                 for (char b_piece : blackPieces){
@@ -403,15 +401,13 @@ void kingAttack (   std::string &boardDescription,
                             if(attackingPiece == 'k'){ //store the attacked white piece and end while
                                 boardOverlay[ (pos_y * 8) + pos_x ] = w_piece;
                             }
-                            // isHit = true;
-                            // break;
                     }                
                 }
                 for (char b_piece : blackPieces){
                     if ( boardDescription[ (pos_y * 8) + pos_x ] == b_piece){ 
                             if(attackingPiece == 'K'){ //store the attacked black piece and end while
                                 boardOverlay[ (pos_y * 8) + pos_x ] = b_piece;
-                            }  
+                            }
                     } 
                 }
             }  
@@ -499,10 +495,11 @@ Returns board with allowed positions ['X'] and attacked pieces of opposite color
 if default piece then it takes the piece from _boardDescription at position x,y
 else puts the desired piece at position x, y 
 */
-std::string attackSquares(std::string boardDescription, int x, int y, char piece){
+std::string attackSquares(  std::string boardDescription, 
+                            int x, int y, char piece ){
     char blackPieces[6] = {'k','q','r','b','n','p'};
     char whitePieces[6] = {'K','Q','R','B','N','P'}; 
-
+    //bool bK = bQ = bR = bB = bN = bP = false;
     std::string boardOverlay = ""; //a string to write sequential results in
     for (int i = 0; i < 64; i++){
         boardOverlay.append("-");

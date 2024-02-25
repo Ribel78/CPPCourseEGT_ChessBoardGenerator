@@ -88,4 +88,5 @@ Returns board with allowed positions ['X'] and attacked pieces of opposite color
 if default piece then it takes the piece from _boardDescription at position x,y
 else puts the desired piece at position x, y 
 */
-std::string attackSquares(std::string boardDescription, int x, int y, char piece = '\0');
+std::string attackSquares(  std::string boardDescription, 
+                            int x, int y, char piece = '\0' );

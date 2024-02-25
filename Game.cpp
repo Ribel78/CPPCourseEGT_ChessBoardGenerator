@@ -89,22 +89,6 @@ bool Game::ttf_init(){
 	buttonStopTex = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
 	buttonStopRect = {980, 560, 256, 64};
 
-	//..this function allows multiline text
-	//..
-	// tempSurfaceText = TTF_RenderText_Blended_Wrapped(font2, "Hello world!\nThis wraps the text.", 
-	// 													{0,0,255,255}, 500);
-	// textTextureFont2Wrapped = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
-	// //..last one - we'll check if clicked on
-	// tempSurfaceText = TTF_RenderText_Blended(font1, "CLICK", {255,0,255,255});
-	// clickableTexture = SDL_CreateTextureFromSurface(renderer, tempSurfaceText);
-
-	//query info from a texture and write to variables 
-	// int tw, th;
-	// SDL_QueryTexture(textTextureFont1, 0, 0, &tw, &th);
-	// // Game object SDL_Rect - gets the dimensions from the texture for filling later
-	// dRectFont1 = {10, 10, tw, th};
-	
-
 	SDL_FreeSurface(tempSurfaceText); // delete the temp surface
 	TTF_CloseFont(font1); //deleting font pointers
 	TTF_CloseFont(font2); //..
@@ -114,22 +98,8 @@ bool Game::ttf_init(){
 	if(infoFont == NULL){
 		std::cout << "infoFont not loaded" << std::endl;
 	}	
-	
-	
 
 	return true;
-}
-
-void Game::render() {
-	//SDL_RenderClear(renderer); // clear from previous pixels
-	//draws in the renderer the portion from the texture (srcRect = NULL if using the whole texture size)
-
-	//SDL_RenderCopy(renderer, textTextureFont1, NULL, &dRectFont1);
-	// SDL_RenderCopy(renderer, textTextureFont1Wrapped, NULL, &dRectFont1Wrapped);
-	// SDL_RenderCopy(renderer, textTextureFont2Wrapped, NULL, &dRectFont2Wrapped);
-	// SDL_RenderCopy(renderer, clickableTexture, NULL, &clickableRect);
-	//all drawn - now dispaly
-	//SDL_RenderPresent(renderer);
 }
 
 bool Game::isClickableTextureClicked(SDL_Texture* t, SDL_Rect* r,  int xDown, int yDown, int xUp, int yUp){
@@ -183,10 +153,10 @@ void Game::handleEvents() {
 		}; break;
 		case SDL_MOUSEBUTTONUP: {
 			int msx, msy;
-			std::cout << "mouse button up\n";
+			//std::cout << "mouse button up\n";
 			if (event.button.button == SDL_BUTTON_RIGHT) {
 				SDL_GetMouseState(&msx, &msy);
-				std::cout << msx << ":" << msy << "\n";
+				//std::cout << msx << ":" << msy << "\n";
 			}
 			//int msx, msy;
 			if (event.button.button == SDL_BUTTON_LEFT) {
@@ -240,7 +210,7 @@ void Game::handleEvents() {
 
 void Game::update() {
 
-	SDL_Delay(100);
+	SDL_Delay(50);
 }
 
 void Game::clean() {
@@ -338,7 +308,7 @@ void Game::drawBoardOverlay(){
 	if (!simulating){
 		int x = chessPieceIdx % 8;
 		int y = chessPieceIdx / 8;
-		std::string overlay = attackSquares(boardDescription, x, y, '\0');
+		std::string overlay = attackSquares(boardDescription, x, y, '\0' );
 		for (int i = 0; i < 64; i++){
 			//(overlay[i]!='-')?50:0;
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -357,7 +327,8 @@ void Game::drawStaticText(){
 	// Title
 	SDL_RenderCopy(renderer, textTitleTexture, NULL, &textTitleRect);
 	
-	// Info - //dynamic text KJFKKF
+	//Dynamic text
+	//FEN Chess Board Description - click to copy to clipboard
 	tempSurfaceDynamicText = TTF_RenderText_Blended(infoFont, 
 	queueFENSetDescription.back().c_str(), {0,0,0,255});
 	
@@ -373,6 +344,15 @@ void Game::drawStaticText(){
 	// Game object SDL_Rect - gets the dimensions from the texture for filling later
 	infoTextRect = {(ww-tw)/2, 650, tw, th}; // for the textInfoTexture
 	SDL_RenderCopy(renderer, textInfoTexture, NULL, &infoTextRect);
+
+	//Statistics for the simulation time
+	tempSurfaceDynamicText = TTF_RenderText_Blended_Wrapped(infoFont, 
+	simulationTimeToString().c_str(), {255,255,255,255}, 0);
+	textTimeTexture = SDL_CreateTextureFromSurface(renderer, tempSurfaceDynamicText);
+	//query info from a texture and write to variables
+	SDL_QueryTexture(textTimeTexture, 0, 0, &tw, &th);
+	timeTextRect = {ww/2 + 20, 200, tw, th}; // for the textInfoTexture
+	SDL_RenderCopy(renderer, textTimeTexture, NULL, &timeTextRect);		
 
 	// Buttons
 	SDL_SetRenderDrawColor(renderer, 50,50,110,255);
@@ -431,6 +411,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 
 	if (shuff){
 		bishopAnomaly:
+		
 		//Shuffle all 32 pieces
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine rand_en;
@@ -438,7 +419,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		//random chess board with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
 
-		std::cout << "SHUFFLING" << std::endl;
+		//std::cout << "SHUFFLING" << std::endl;
 
 		// Check if bishops are on different colors if not re-shuffle
 		int blackBishopOnBlack = 0;
@@ -446,6 +427,7 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		int whiteBishopOnBlack = 0;
 		int whiteBishopOnWhite = 0;
 		for (int i = 0; i < 64; i++){
+		//std::cout << "CHECKING BISHOPS" << std::endl;
 			if(chess_set[i]=='b'){ // black bishop found
 				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
 					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
@@ -462,15 +444,17 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 					whiteBishopOnWhite += 1;
 				}
 			}
+		//std::cout << "BISHOPS CHECKED" << std::endl;
 		}
 		if (blackBishopOnBlack > 1 || blackBishopOnWhite > 1 || whiteBishopOnBlack > 1 || whiteBishopOnWhite > 1 ) {
 			//Bishops of a kind on same color square - reshuffle
+			//std::cout << "BISHOP ANOMALY" << std::endl;
 			goto bishopAnomaly;
 		}
 
 		//Remove all pawns if foud on end rows - keep count of removed pieces
 		int pieces_to_remove = 8;	
-		while(pieces_to_remove != 0){
+		while(pieces_to_remove > 0){
 			for(int i = 0; i < 64; i++){
 				if(i < 8 || i > (64 - 9)){
 					if(chess_set[i] == 'p' || chess_set[i] == 'P'){
@@ -485,17 +469,85 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 			}
 			/*Remove randomly selected pieces until 8 pieces in total are removed 
 			not counting the the removed kings*/
-			if(pieces_to_remove != 0){
+			if(pieces_to_remove > 0){
 				int rand_index = rand()%64;
 				if(chess_set[rand_index]!= '-'){
 					chess_set[rand_index] = '-';
 					pieces_to_remove -= 1;
 				} 
 			}
+			//std::cout << "REMOVING PIECES: " << pieces_to_remove << std::endl;
 		}
 		//std::cout << "rand()%64: " << rand()%64 << std::endl;
 		
 		// Reintroduce Kings - TO DO
+		//std::string cp_lookupRef = "KQRBNPkqrbnp";
+		char blackPieces[6] = {'k','q','r','b','n','p'};
+		char whitePieces[6] = {'K','Q','R','B','N','P'}; 
+		// Add  Black King
+		bool isSafeSquare = false;
+		std::string emptySquaresLookup(chess_set);
+		while(!isSafeSquare){ //while isSafeSquare is false
+			int rand_index = rand()%64; // random index
+			if (chess_set[rand_index] != '-'){ //if not empty start new cycle
+				continue;
+			}
+			for (int b_p = 0; b_p < 6; b_p++){ //test each black piece
+				std::string attackedPieces = attackSquares(		emptySquaresLookup, 
+															rand_index % 8, rand_index / 8, blackPieces[b_p]);				
+				for (char piece : attackedPieces){ //for cell in attack board
+					if (piece == whitePieces[b_p]){ //if white piece is oposite of current black piece
+						isSafeSquare = false;
+						break; //can't place here
+					} else {
+						isSafeSquare = true;
+					}
+				}	
+				if (isSafeSquare == false){
+					break;
+				} else {
+					isSafeSquare = true;
+				}		
+			}
+			if (isSafeSquare == true){
+				chess_set[rand_index] = 'k';
+			}
+		}	
+
+		// Add  White King
+		isSafeSquare = false;
+		emptySquaresLookup =std::string(chess_set);
+
+		while(!isSafeSquare){ //while isSafeSquare is false
+
+			int rand_index = rand()%64; // random index
+			if (chess_set[rand_index] != '-'){ //if not empty start new cycle
+				continue;
+			}
+			for (int w_p = 0; w_p < 6; w_p++){ //test each black piece
+
+				std::string attackedPieces = attackSquares(		emptySquaresLookup, 
+															rand_index % 8, rand_index / 8, whitePieces[w_p]);
+				
+				for (char piece : attackedPieces){ //for cell in attack board
+					if (piece == blackPieces[w_p]){ //if white piece is oposite of current black piece
+						isSafeSquare = false;
+						break; //can't place here
+					} else {
+						isSafeSquare = true;
+					}
+				}	
+				if (isSafeSquare == false){
+					break;
+				} else {
+					isSafeSquare = true;
+				}		
+			}
+			if (isSafeSquare == true){
+				chess_set[rand_index] = 'K';
+			}
+		}
+		
 
 		//End simulation - caclulate simulation duration in ns
 		const auto endTime = std::chrono::steady_clock::now();
@@ -567,4 +619,23 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 			custDescription = queueCustomSetDescription.back();
 			fenDescription = queueFENSetDescription.back();
 		}
+}
+
+std::string Game::simulationTimeToString(){
+	std::string timeStatsString = "";
+	timeStatsString.append("Number of simulations: ");
+	timeStatsString.append(to_string(numberOfSimulations));
+	timeStatsString.append("\n");
+	timeStatsString.append("Current Simulation Time: ");
+	timeStatsString.append(to_string(simulationTime));	
+	timeStatsString.append(" ns\n");
+	timeStatsString.append("Total Simulation Time: ");
+	timeStatsString.append(to_string(totalSimulationTime));
+	timeStatsString.append(" ns\n");
+	timeStatsString.append("Average Simulation Time: ");
+	timeStatsString.append(to_string(averageSimulationTime));
+	timeStatsString.append(" ns");	
+	
+	return 	timeStatsString;
+	
 }

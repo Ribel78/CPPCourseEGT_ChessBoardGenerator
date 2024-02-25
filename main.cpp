@@ -13,8 +13,7 @@ int main(int argc, char* argv[]) {
 	game->init("Chess Board Generator",
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
-		WINDOW_WIDTH, WINDOW_HEIGHT,
-		SDL_WINDOW_RESIZABLE);
+		WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 	game->ttf_init();
 	game->initBoard();
 	while (game->isRunning()) {
@@ -31,7 +30,6 @@ int main(int argc, char* argv[]) {
 	
 		//Update Data	
 		game->update();
-		// game->render();	
 		
 	}
 	game->clean();
