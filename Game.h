@@ -11,6 +11,8 @@
 #include <chrono>
 #include <cstring>
 
+#include "Utilities.h"
+
 class Game {
 public:
 	Game();
@@ -35,7 +37,9 @@ public:
 
 	void drawPieces();
 	void shufflePieces(bool, std::string&, std::string&);
-	
+
+	friend std::string attackSquares(std::string boardDescription, int x, int y, char piece);
+
 private:
 
 	SDL_Window* window = NULL;
@@ -56,7 +60,7 @@ private:
 	//Chess
 	int chess_size;
     SDL_Rect* chess_square[64];
-	int boardOverlay[64]; //higlight valid moves
+	//int boardOverlay[64]; //highlight valid moves
     SDL_Color chess_color[3];	
 	SDL_Texture* chessPieces[12];
 	SDL_Texture* buttonStartTex;
@@ -76,5 +80,8 @@ private:
 	double totalSimulationTime;
 	double averageSimulationTime;
 	double simulationTime;
+
+	int chessPieceIdx;
+	std::string boardDescription;
 
 };
