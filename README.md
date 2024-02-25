@@ -3,11 +3,11 @@
 
 ## **Finished Project**
 
-Start/Stop Simulation buttons added
-Click on FEN notation to copy it in clipboard
-Pieces reduced to 75% (24 pieces).
-Highlghts the allowed positions or takes of selected piece.
-Statistics of simulation time and related measurments.
+- Start/Stop Simulation buttons added
+- Click on FEN notation (bottom) to copy in clipboard
+- Pieces reduced to 75% (24 pieces). No illegal positions. No checks.
+- Highlghting of allowed positions when clicked on chess piece.
+- Added time statistics for the generation part of the code.
 
 ![Frame 107](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/ChessBoardGenerator%20-%20WIP3.gif)
 
