@@ -1,7 +1,31 @@
-Chess Board Generator
-Random generation using 75% of all chess pieces with some rules applied.
+# Chess Board Generator
+### Random generation using 75% of all chess pieces with some rules applied.
 
-Work in Progress
+## **Finished Project**
+
+Start/Stop Simulation buttons added
+Click on FEN notation to copy it in clipboard
+Pieces reduced to 75% (24 pieces).
+Highlghts the allowed positions or takes of selected piece.
+Statistics of simulation time and related measurments.
+
+![Frame 107](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/ChessBoardGenerator%20-%20WIP3.gif)
+
+Stills:
+![Start Configuration](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/scr(3).png)
+
+![Simulation Stats](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/scr(4).png)
+
+Highlighting selected piece legal moves
+![Simulation Stats](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/sc(8).png)
+
+FEN copied the above chess board to clipboard and then pasted in online chess editor at 
+
+[356Chess.com](https://www.365chess.com/board_editor.php)
+
+![Simulation Stats](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/sc(9).png)
+
+## **Work in Progress**
 
 Currently all 32 pieces are displayed. Elimination rules - to be applied
 
@@ -18,3 +42,7 @@ Static frames:
 ![Frame 95](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/frame_95.png)
 
 ![Frame 107](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/frame_107.png)
+
+
+
+
