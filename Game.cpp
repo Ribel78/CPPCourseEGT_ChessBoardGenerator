@@ -141,7 +141,7 @@ void Game::handleEvents() {
 		case SDL_KEYUP:{ // Use down arrow to select a simulation from the past 20 stored in a queue
 			if(event.key.keysym.sym == SDLK_DOWN){
 				if(!isSimulating()){
-					std::cout << "Down Arrow Released\n";
+					chessPieceIdx = -1;
 					std::string temp;
 					temp = queueFENSetDescription.front();
 					queueFENSetDescription.pop();
@@ -295,8 +295,8 @@ void Game::drawBoard(){
 }
 //Draw allowed positions of the selected chess piece
 void Game::drawBoardOverlay(){
-	bool showOverlay = true;
-	if (!simulating){
+	//bool showOverlay = true;
+	if (!simulating && chessPieceIdx > -1){
 		int x = chessPieceIdx % 8;
 		int y = chessPieceIdx / 8;
 		std::string overlay = attackSquares(boardDescription, x, y, '\0' );

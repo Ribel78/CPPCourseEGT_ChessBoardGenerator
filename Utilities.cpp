@@ -1,5 +1,7 @@
 #include "Utilities.h"
 
+
+
 /*
 _boardDescription - chess board description in custom format 
 _boardOverlay - chess board description to update attack positions of the rook piece
@@ -497,6 +499,7 @@ else puts the desired piece at position x, y
 */
 std::string attackSquares(  std::string boardDescription, 
                             int x, int y, char piece ){
+
     char blackPieces[6] = {'k','q','r','b','n','p'};
     char whitePieces[6] = {'K','Q','R','B','N','P'}; 
     //bool bK = bQ = bR = bB = bN = bP = false;
