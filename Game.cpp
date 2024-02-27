@@ -138,6 +138,21 @@ void Game::handleEvents() {
 		switch (event.type) {
 		case SDL_QUIT: running = false; break;
 
+		case SDL_KEYUP:{ // Use down arrow to select a simulation from the past 20 stored in a queue
+			if(event.key.keysym.sym == SDLK_DOWN){
+				if(!isSimulating()){
+					std::cout << "Down Arrow Released\n";
+					std::string temp;
+					temp = queueFENSetDescription.front();
+					queueFENSetDescription.pop();
+					queueFENSetDescription.push(temp);
+					temp = queueCustomSetDescription.front();
+					queueCustomSetDescription.pop();
+					queueCustomSetDescription.push(temp);
+					boardDescription = queueCustomSetDescription.back(); //or temp;
+				}
+			}
+		}; break;
 		case SDL_MOUSEBUTTONDOWN: {
 			int msx, msy;
 			if (event.button.button == SDL_BUTTON_LEFT) {
@@ -146,7 +161,7 @@ void Game::handleEvents() {
 				mouseDownY = msy;
 			}
 		}; break;
-		case SDL_MOUSEBUTTONUP: {
+		case SDL_MOUSEBUTTONUP: {			
 			int msx, msy;
 			if (event.button.button == SDL_BUTTON_RIGHT) {
 				SDL_GetMouseState(&msx, &msy);
