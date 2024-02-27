@@ -139,11 +139,6 @@ void Game::handleEvents() {
 		case SDL_QUIT: running = false; break;
 
 		case SDL_MOUSEBUTTONDOWN: {
-			// int msx, msy;
-			// std::cout << "mouse button down\n";
-			// if (event.button.button == SDL_BUTTON_LEFT) {
-			// 	SDL_GetMouseState(&msx, &msy);
-			// 	std::cout << msx << ":" << msy << "\n";
 			int msx, msy;
 			if (event.button.button == SDL_BUTTON_LEFT) {
 				SDL_GetMouseState(&msx, &msy);
@@ -153,15 +148,12 @@ void Game::handleEvents() {
 		}; break;
 		case SDL_MOUSEBUTTONUP: {
 			int msx, msy;
-			//std::cout << "mouse button up\n";
 			if (event.button.button == SDL_BUTTON_RIGHT) {
 				SDL_GetMouseState(&msx, &msy);
-				//std::cout << msx << ":" << msy << "\n";
 			}
 			//int msx, msy;
 			if (event.button.button == SDL_BUTTON_LEFT) {
 				SDL_GetMouseState(&msx, &msy);
-				//std::cout << infoTextRect.x << ":" <<infoTextRect.y<<":"<<infoTextRect.w<<":"<<infoTextRect.h<<std::endl;
 				if(buttonClicked(&buttonStartRect,mouseDownX,mouseDownY, msx, msy)){
 					setSimulating(true);
 				}
@@ -173,7 +165,6 @@ void Game::handleEvents() {
 				}	
 				for (int i = 0; i < 64; i++){
 					if(buttonClicked(chess_square[i], mouseDownX, mouseDownY, msx, msy) && !isSimulating()){
-						std::cout << "Index is: " << i << std::endl;
 						chessPieceIdx = i;
 						boardDescription = queueCustomSetDescription.back();
 						break;
@@ -181,35 +172,20 @@ void Game::handleEvents() {
 				}		
 			}
 		}; break;
-
-		case SDL_KEYDOWN:{
-			// if(event.key.keysym.sym == SDLK_LEFT){
-			// 	std::cout << "Left Arrow\n";
-			// 	dRectFont1.x--;
-			// }
-			// if(event.key.keysym.sym == SDLK_RIGHT){
-			// 	dRectFont1.x++;
-			// }
-			// if(event.key.keysym.sym == SDLK_UP){
-			// 	dRectFont1.y--;
-			// }
-			// if(event.key.keysym.sym == SDLK_DOWN){
-			// 	dRectFont1.y++;
-			// }
-		}; break;
-		case SDL_KEYUP:{
-			// std::cout << "Key is up\n";
-		}; break;
-		case SDL_MOUSEMOTION: {
-
-		}; break;
 		default: break;
 		}
 	}
 }
 
 void Game::update() {
+	//Render All
+	SDL_RenderPresent(renderer);
 
+	//Destroy all Dynamic Text textures after Rendering to free memory
+	SDL_DestroyTexture(textTimeTexture);
+	SDL_DestroyTexture(textInfoTexture);
+
+	//To show some visual shuffling wait 50 ms
 	SDL_Delay(50);
 }
 
@@ -260,7 +236,7 @@ Game::~Game() {
         delete chess_square[i];
     }	
 
-	//dynamic text KJFKKF
+	//dynamic text textures
 	SDL_FreeSurface(tempSurfaceDynamicText); //closing surface for dynamic text
 	TTF_CloseFont(infoFont); // closing font for dynamic text
 }
@@ -278,9 +254,9 @@ void Game::setSimulating(bool state){
 void Game::initBackground(){
 	SDL_SetRenderDrawColor(renderer, 23,138,207, 255);
 	SDL_RenderClear(renderer);
-	//SDL_RenderPresent(renderer);
 }
 
+//Positions all 64 SDL_Rect-s on a chess board
 void Game::initBoard(){
     for (int i = 0; i < 64; i++){
         chess_square[i]->x = (i % 8)*(chess_size / 8);
@@ -289,6 +265,7 @@ void Game::initBoard(){
     }	
 }
 
+//Draws colored squares on the positioned SDL_Rect-s
 void Game::drawBoard(){
 	for (int i = 0; i < 64; i++){
 		SDL_SetRenderDrawColor(
@@ -300,9 +277,8 @@ void Game::drawBoard(){
 		);
 		SDL_RenderFillRect(renderer,chess_square[i]);
 	}
-	//SDL_RenderPresent(renderer);
 }
-
+//Draw allowed positions of the selected chess piece
 void Game::drawBoardOverlay(){
 	bool showOverlay = true;
 	if (!simulating){
@@ -310,7 +286,6 @@ void Game::drawBoardOverlay(){
 		int y = chessPieceIdx / 8;
 		std::string overlay = attackSquares(boardDescription, x, y, '\0' );
 		for (int i = 0; i < 64; i++){
-			//(overlay[i]!='-')?50:0;
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 			SDL_SetRenderDrawColor(renderer, 
 				chess_color[2].r, chess_color[2].g, 
@@ -318,9 +293,9 @@ void Game::drawBoardOverlay(){
 			SDL_RenderFillRect(renderer,chess_square[i]);
 		}
 	} else {
+		//Board descriptions is empty - no overlay
 		boardDescription = "----------------------------------------------------------------";
 	}
-	//SDL_RenderPresent(renderer);	
 }
 
 void Game::drawStaticText(){
@@ -328,7 +303,7 @@ void Game::drawStaticText(){
 	SDL_RenderCopy(renderer, textTitleTexture, NULL, &textTitleRect);
 	
 	//Dynamic text
-	//FEN Chess Board Description - click to copy to clipboard
+	//FEN Chess Board Notation - click to copy to clipboard
 	tempSurfaceDynamicText = TTF_RenderText_Blended(infoFont, 
 	queueFENSetDescription.back().c_str(), {0,0,0,255});
 	
@@ -352,7 +327,9 @@ void Game::drawStaticText(){
 	//query info from a texture and write to variables
 	SDL_QueryTexture(textTimeTexture, 0, 0, &tw, &th);
 	timeTextRect = {ww/2 + 20, 200, tw, th}; // for the textInfoTexture
-	SDL_RenderCopy(renderer, textTimeTexture, NULL, &timeTextRect);		
+	SDL_RenderCopy(renderer, textTimeTexture, NULL, &timeTextRect);	
+
+	SDL_FreeSurface(tempSurfaceDynamicText);
 
 	// Buttons
 	SDL_SetRenderDrawColor(renderer, 50,50,110,255);
@@ -360,19 +337,17 @@ void Game::drawStaticText(){
 	SDL_RenderCopy(renderer, buttonStartTex, NULL, &buttonStartRect);
 	SDL_RenderFillRect(renderer,&buttonStopRect);
 	SDL_RenderCopy(renderer, buttonStopTex, NULL, &buttonStopRect);
-	//SDL_RenderPresent(renderer);
 
 }
 
 void Game::drawPieces(){
-	//Example FEN chess board description - Rp5k/4pqpb/1R4P1/r1p1Pp1n/1r2PQ1P/3NN3/1BPpP2p/bP1BKpnP
 
+	//Example FEN chess board description - Rp5k/4pqpb/1R4P1/r1p1Pp1n/1r2PQ1P/3NN3/1BPpP2p/bP1BKpnP
 	//init string descriptions
 	std::string chessBoardShuffle;
 	std::string fenChessBoard;
 
 	shufflePieces(isSimulating(), chessBoardShuffle, fenChessBoard);
-	//std::cout << fenChessBoard << std::endl;
 
 	for (int i = 0; i < 64; i++){
 		if (chessBoardShuffle[i] == '-'){
@@ -385,32 +360,29 @@ void Game::drawPieces(){
 			}
 		}
 	}
-	SDL_RenderPresent(renderer);
 }
 
 /*
-shuffle a char string of 64 chars formated to FEN chess board description
-and assigns raw and parsed char* to external variables
-_shuff - to shuffle (1) or keep ordered chess set
-_&custDescription - string reference to write the chess board description
-_&fenDescription - string reference to write the FEN the chess board description
+Randomize a char string of 64 chars of modified FEN chess board description
+and update references of custom and correct annotation variables
+_shuff - bool to shuffle (1) or keep ordered chess set
+_&custDescription - string reference to write the chess board description to
+_&fenDescription - string reference to write the FEN notation of the chess board description
 */
 void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &fenDescription){
 
 	//Start simulation set startTime
     const std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 
-	//goto label bishops are not on different colored square - try new shuffle
-	
-		
 	char chess_set[] = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR";
 
 	//https://www.chess.com/terms/fen-chess
-	char tempFEN[71]; //string to hold the positions including separators '/' (64+7)
-	char FEN[71] = {'0',}; //string to hold the pieces including separators in FEN Format
+	char tempFEN[71]; //char array to hold the positions including separators '/' (64+7)
+	char FEN[71] = {'0',}; //char array to hold the pieces including separators in FEN Format
 
 	if (shuff){
-		bishopAnomaly:
+		//goto label
+		repeatSimulation:
 		
 		//Shuffle all 32 pieces
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -419,15 +391,12 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		//random chess board with all pieces
 		std::shuffle(chess_set, chess_set+64, rand_en); 
 
-		//std::cout << "SHUFFLING" << std::endl;
-
 		// Check if bishops are on different colors if not re-shuffle
 		int blackBishopOnBlack = 0;
 		int blackBishopOnWhite = 0;
 		int whiteBishopOnBlack = 0;
 		int whiteBishopOnWhite = 0;
 		for (int i = 0; i < 64; i++){
-		//std::cout << "CHECKING BISHOPS" << std::endl;
 			if(chess_set[i]=='b'){ // black bishop found
 				if( (( i / 8 ) % 2 == 0 && ( i % 8 ) % 2 == 1) ||
 					(( i / 8 ) % 2 == 1 && ( i % 8 ) % 2 == 0) ){ // check if color of square is black
@@ -444,12 +413,10 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 					whiteBishopOnWhite += 1;
 				}
 			}
-		//std::cout << "BISHOPS CHECKED" << std::endl;
 		}
 		if (blackBishopOnBlack > 1 || blackBishopOnWhite > 1 || whiteBishopOnBlack > 1 || whiteBishopOnWhite > 1 ) {
-			//Bishops of a kind on same color square - reshuffle
-			//std::cout << "BISHOP ANOMALY" << std::endl;
-			goto bishopAnomaly;
+			//If Bishops of a kind on same color square - reshuffle
+			goto repeatSimulation;
 		}
 
 		//Remove all pawns if foud on end rows - keep count of removed pieces
@@ -467,6 +434,11 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 						chess_set[i] = '-';
 				}
 			}
+			//check if pieces_to_remove is negative (in case more than 8 pawns on end rows) - cancel this simulation
+			if (pieces_to_remove < 0){
+				goto repeatSimulation;
+			}
+
 			/*Remove randomly selected pieces until 8 pieces in total are removed 
 			not counting the the removed kings*/
 			if(pieces_to_remove > 0){
@@ -476,14 +448,13 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 					pieces_to_remove -= 1;
 				} 
 			}
-			//std::cout << "REMOVING PIECES: " << pieces_to_remove << std::endl;
 		}
-		//std::cout << "rand()%64: " << rand()%64 << std::endl;
 		
-		// Reintroduce Kings - TO DO
+		// Reintroduce Kings
 		//std::string cp_lookupRef = "KQRBNPkqrbnp";
 		char blackPieces[6] = {'k','q','r','b','n','p'};
 		char whitePieces[6] = {'K','Q','R','B','N','P'}; 
+
 		// Add  Black King
 		bool isSafeSquare = false;
 		std::string emptySquaresLookup(chess_set);
@@ -558,18 +529,18 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		totalSimulationTime += simulationTime;
 		averageSimulationTime = totalSimulationTime / numberOfSimulations;
 
-		std::cout 	<< "nSim - " << std::to_string(numberOfSimulations) << " ns"
-					<< "; Ts - "<< std::to_string(simulationTime) << " ns"
-					<<"; Ta - " << std::to_string(averageSimulationTime) << " ns"
-					<< "; Tt - "<< std::to_string(totalSimulationTime) << " ns"
-					<< std::endl;
+		// std::cout 	<< "nSim - " << std::to_string(numberOfSimulations) << " ns"
+		// 			<< "; Ts - "<< std::to_string(simulationTime) << " ns"
+		// 			<<"; Ta - " << std::to_string(averageSimulationTime) << " ns"
+		// 			<< "; Tt - "<< std::to_string(totalSimulationTime) << " ns"
+		// 			<< std::endl;
 
 		//Set text for description of the chess board
 		std::string temp(chess_set);
 		custDescription = temp;
 		queueCustomSetDescription.push(custDescription);
 
-		//parse custom description to FEN description
+		//parse custom description to FEN notation for dispaly
 		int j = 0;
 		for (int i = 0; i < 64; i++){
 			tempFEN[j] = chess_set[i];
@@ -621,6 +592,9 @@ void Game::shufflePieces(bool shuff, std::string &custDescription, std::string &
 		}
 }
 
+/*
+Format time statistics for dynamic text display 
+Returns a string */
 std::string Game::simulationTimeToString(){
 	std::string timeStatsString = "";
 	timeStatsString.append("Number of simulations: ");

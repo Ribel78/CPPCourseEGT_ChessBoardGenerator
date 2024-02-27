@@ -58,15 +58,9 @@ private:
 	SDL_Renderer* renderer = NULL;
 	bool running;
 	bool simulating;
-	SDL_Texture	*textTextureFont1, 
-				*textTitleTexture, 
-				*textTextureFont2Wrapped,
-				*chessTexture;
-	SDL_Rect 	dRectFont1, 
-				textTitleRect, 
-				dRectFont2Wrapped;
-	SDL_Texture* clickableTexture;
-	SDL_Rect clickableRect;
+	SDL_Texture		*textTitleTexture;
+	SDL_Rect 		textTitleRect;
+	SDL_Rect 		clickableRect;
 	int mouseDownX, mouseDownY;
 
 	//Chess Related fields
