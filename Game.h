@@ -73,7 +73,7 @@ private:
 	SDL_Texture* buttonStopTex;
 	SDL_Rect buttonStopRect;
 
-	//Idea was to store and seek trough the last 20 simulations
+	//Seek trough the last 20 simulations using Down Arrow
 	std::queue<std::string> queueCustomSetDescription;
 	std::queue<std::string> queueFENSetDescription;
 
