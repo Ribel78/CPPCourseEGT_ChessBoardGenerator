@@ -1,13 +1,19 @@
 # Chess Board Generator
 ### Random generation using 75% of all chess pieces with some rules applied.
 
-## **Finished Project**
+Requirements - [Simple DirectMedia Layer](https://www.libsdl.org) library
 
-- Start/Stop Simulation buttons added
-- Click on FEN notation (bottom) to copy in clipboard
-- Pieces reduced to 75% (24 pieces). No illegal positions. No checks.
-- Highlghting of allowed positions when clicked on chess piece.
-- Added time statistics for the generation part of the code.
+## **Project Summary**
+
+- Random chess board generation
+- Chess pieces must be 75% (24 pieces). No illegal positions allowed. No checks.
+- Buttons to Start/Stop the chess board generation/simulation.
+- Display of time statistics for the board generation part of the code.
+- Click on FEN notation (bottom text) to copy it in clipboard
+- On paused simulation - highlghting of allowed positions when clicked on a chess piece.
+- On paused simulation - pressing down arrow key seeks through the last 20 generated chess boards.
+
+## **Finished Project**
 
 ![Frame 107](https://github.com/Ribel78/CPPCourseEGT_ChessBoardGenerator/blob/main/screenshots/ChessBoardGenerator%20-%20WIP3.gif)
 
